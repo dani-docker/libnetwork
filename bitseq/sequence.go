@@ -351,6 +351,7 @@ func (h *Handle) set(ordinal, start, end uint64, any bool, release bool, serial 
 
 		// Create a private copy of h and work on it
 		nh := h.getCopy()
+		h.Unlock()
 
 		nh.head = pushReservation(bytePos, bitPos, nh.head, release)
 		if release {
@@ -373,11 +374,12 @@ func (h *Handle) set(ordinal, start, end uint64, any bool, release bool, serial 
 		}
 
 		// Previous atomic push was successful. Save private copy to local copy
+		h.Lock()
+		defer h.Unlock()
 		h.unselected = nh.unselected
 		h.head = nh.head
 		h.dbExists = nh.dbExists
 		h.dbIndex = nh.dbIndex
-		h.Unlock()
 		return ret, nil
 	}
 }
